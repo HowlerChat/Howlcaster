@@ -3,6 +3,9 @@
 .message-row {
     display: flex;
     flex-direction: row;
+    padding-left: 11px;
+    padding-right: 11px;
+    cursor: default;
 }
 
 .message-sender-icon {
@@ -58,4 +61,8 @@
 
 .message-row:hover .message-menu:hover {
     background: $primary-action-highlight-color;
+}
+
+.message-a, .message-a:visited, .message-a:hover {
+    color: $primary-action-highlight-color !important;
 }

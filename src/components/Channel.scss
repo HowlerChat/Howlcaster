@@ -3,7 +3,7 @@
 .channel {
     flex: 1 0;
     border-top-left-radius: 10px;
-    padding: 8px 11px;
+    padding: 8px 0px;
     background: $quarternary-brand-color;
     z-index: 1;
     display: flex;
@@ -16,6 +16,8 @@
     text-shadow: 0px 2px 3px rgba(0, 0, 0, 0.8);
     font-size: 18px;
     padding-bottom: 8px;
+    margin-left: 11px;
+    margin-right: 11px;
 }
 
 .message-list {
@@ -51,7 +53,7 @@
     border-top: 1px;
     border-color: $secondary-brand-highlight-color;
     border-style: solid;
-    margin-left: 26px;
+    margin-left: 37px;
     margin-top: 8px;
 }
 
@@ -85,6 +87,7 @@
     flex-direction: row;
     align-content: center;
     vertical-align: middle;
+    cursor: pointer;
 }
 
 .message-editor {
@@ -100,6 +103,8 @@
     width: 100%;
     resize: none;
     line-height: 18px;
+    margin-left: 11px;
+    margin-right: 11px;
 
     ::placeholder {
         color:rgba(255, 255, 255, 0.60);
@@ -115,6 +120,8 @@
     border-radius: 10px 10px 0px 0px;
     padding: 6px 20px;
     font-size: 10pt;
+    margin-left: 11px;
+    margin-right: 11px;
 }
 
 .message-in-reply-dismiss {
