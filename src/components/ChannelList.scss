@@ -28,10 +28,7 @@
     font-weight: 700;
     text-shadow: 0px 2px 3px rgba(0, 0, 0, 0.8);
     font-size: 18px;
-    background-image: url('https://www.farcaster.xyz/img/logo_128.png');
-    background-position: center;
-    background-size: 10%;
-    background-color: $secondary-brand-color;
+    background: linear-gradient(135deg, rgb(107, 85, 137) 0%, rgb(68, 40, 90) 100%);
     border-top-left-radius: 10px;
     margin-right: -10px;
     height: 120px;
