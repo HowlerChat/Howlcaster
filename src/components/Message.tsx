@@ -17,7 +17,7 @@ const Message: React.FunctionComponent<MessageProps> = (props) => {
         props.cast.text = props.cast.text.replace(image, "");
     }
 
-    let videos = props.cast.text.match(/https?:\/\/w?w?w?.?youtu.?be.?c?o?m?\/[a-z\-_0-9/.]*/i);
+    let videos = props.cast.text.match(/https?:\/\/w?w?w?.?youtu.?be.?c?o?m?\/[a-z\-_0-9/.?=]*/i);
 
     if (videos) for (const video of videos) {
         props.cast.text = props.cast.text.replace(video, "");
@@ -52,7 +52,7 @@ const Message: React.FunctionComponent<MessageProps> = (props) => {
                     })()}
                     {(() => {
                         if (videos) for (const video of videos) {
-                            return <iframe width="560" height="315" src={video.replace("youtu.be", "youtube.com").replace("youtube.com/","youtube.com/embed/")} title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen></iframe>;
+                            return <iframe width="560" height="315" src={video.replace("youtu.be", "youtube.com").replace("youtube.com/","youtube.com/embed/").replace("watch?v=", "")} title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen></iframe>;
                         }
                     })()}
                     </div>
