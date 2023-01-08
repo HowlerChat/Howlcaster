@@ -39,7 +39,7 @@ const App: React.FunctionComponent<AppProps> = (props) => {
     React.useEffect(() => {
         props.requestLocalization("en-US");
 
-        if (authState == AuthState.LoggedOut) {
+        if (authState === AuthState.LoggedOut) {
             const mnemonic = window.localStorage.getItem("mnemonic");
 
             if (mnemonic) {
@@ -48,8 +48,12 @@ const App: React.FunctionComponent<AppProps> = (props) => {
                 setUser(wallet);
                 setAuthState(AuthState.SignedIn);
             }
+        } else {
+            setInterval(() => {
+                props.reloadCasts()
+            }, 30000);
         }
-    }, []);
+    }, [authState]);
     
     return authState === AuthState.SignedIn && user ?
         // todo: without even really saying, holy shit this needs a refactor
