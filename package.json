@@ -5,9 +5,9 @@
   "dependencies": {
     "@aws-amplify/ui-react": "^1.2.1",
     "@babel/core": "7.12.3",
-    "@fortawesome/fontawesome-svg-core": "^1.2.35",
-    "@fortawesome/free-solid-svg-icons": "^5.15.3",
-    "@fortawesome/react-fontawesome": "^0.1.14",
+    "@fortawesome/fontawesome-svg-core": "^6.2.1",
+    "@fortawesome/free-solid-svg-icons": "^6.2.1",
+    "@fortawesome/react-fontawesome": "^0.2.0",
     "@microsoft/signalr": "^5.0.6",
     "@pmmmwh/react-refresh-webpack-plugin": "0.4.3",
     "@standard-crypto/farcaster-js": "^5.4.0",

@@ -5,7 +5,7 @@
     flex-direction: row;
     justify-content: stretch;
     height: 100%;
-    width: 100%;
+    width: calc(100vw - 72px);
 }
 
 .space-container-channels {

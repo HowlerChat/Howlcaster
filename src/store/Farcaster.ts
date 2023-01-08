@@ -51,6 +51,7 @@ interface ReceiveConnectionAction {
 interface SendCastAction {
     type: 'SEND_CAST';
     message: string;
+    inReplyTo?: Cast | undefined;
 }
 
 interface SubmittingCastAction {
@@ -102,9 +103,9 @@ async function grabPages(client: MerkleAPIClient) {
     return casts;
 }
 
-async function publishCast(client: MerkleAPIClient, message: string) {
+async function publishCast(client: MerkleAPIClient, message: string, inReplyTo?: Cast | undefined) {
     try {
-        await client.publishCast(message);
+        await client.publishCast(message, inReplyTo);
     } catch (e) {
         console.log(e);
     }
@@ -136,7 +137,7 @@ function* handleSubmitCast(request: SendCastAction) {
     yield put({type: 'SUBMITTING_CAST', message: request.message});
     
     try {
-        yield call(publishCast, state.connection, request.message);
+        yield call(publishCast, state.connection, request.message, request.inReplyTo);
         let casts: Cast[] = yield call(grabPages, state.connection!);
         yield put({type: 'SUBMITTED_CAST', casts: casts });
     } catch (e) {
@@ -171,7 +172,7 @@ export const farcasterSagas = {
 export const actionCreators = {
     requestConnection: (wallet: ethers.Wallet) => ({ type: 'REQUEST_CONNECTION', wallet } as RequestConnectionAction),
     reloadCasts: () => ({ type: 'RELOAD_CASTS' } as ReloadCastsAction),
-    submitCast: (message: string) => ({ type: 'SEND_CAST', message } as SendCastAction),
+    submitCast: (message: string, inReplyTo?: Cast | undefined) => ({ type: 'SEND_CAST', message, inReplyTo } as SendCastAction),
 };
 
 // ----------------

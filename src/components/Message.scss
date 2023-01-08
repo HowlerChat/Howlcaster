@@ -1,0 +1,61 @@
+@import '../sass/variables.scss';
+
+.message-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.message-sender-icon {
+    width: 49px;
+    height: 49px;
+    background-position: center;
+    background-size: cover;
+    border-radius: 29px;
+    display: inline-block;
+}
+
+.message-content {
+    flex: 1 0;
+    padding-left: 10px;
+}
+
+.message-sender-name {
+    font-weight: 700;
+    text-shadow: 0px 2px 3px rgba(0, 0, 0, 0.8);
+}
+
+.message-timestamp {
+    opacity: 0.4;
+    margin-left: 9px;
+}
+
+.message-post-content {
+    margin-top: 2px;
+}
+
+.message-row:hover {
+    background: $secondary-brand-highlight-color;
+}
+
+.message-row .message-menu {
+    display: none;
+}
+
+.message-row:hover .message-menu {
+    position: relative;
+    left: -10px;
+    top: -10px;
+    padding: 6px;
+    text-align: center;
+    height: 36px;
+    width: 36px;
+    display: inline-block;
+    background: $primary-action-color;
+    border-radius: 20px;
+    box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+}
+
+.message-row:hover .message-menu:hover {
+    background: $primary-action-highlight-color;
+}

@@ -1,6 +1,4 @@
 import * as React from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {faChevronDown} from '@fortawesome/free-solid-svg-icons';
 import * as moment from 'moment-timezone';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router';
@@ -8,15 +6,17 @@ import * as Farcaster from '../store/Farcaster';
 import './Channel.scss';
 import { Cast } from '@standard-crypto/farcaster-js';
 import { ApplicationState } from '../store';
+import Message from './Message';
 
 type ChannelProps = { casts: Cast[], channelId: string } & Farcaster.FarcasterState & typeof Farcaster.actionCreators;
 
 const Channel: React.FunctionComponent<ChannelProps> = (props) => {
     let [pendingMessage, setPendingMessage] = React.useState<string>();
+    let [inReply, setInReply] = React.useState<Cast | undefined>();
     let ref = React.createRef<HTMLDivElement>();
 
     const submitMessage = () => {
-        props.submitCast(pendingMessage!);
+        props.submitCast(pendingMessage!, inReply);
         // this.setState(prevState => { return {...prevState, messages: prevState.messages.concat([{
         //     // "timestamp": "1622272285000",
         //     "messageId": Math.random().toString(16).substring(2, 8), // just need a random value for now
@@ -42,43 +42,40 @@ const Channel: React.FunctionComponent<ChannelProps> = (props) => {
             {props.casts.map(message => {
                 let sender = message.author;
                 let time = moment.tz(message.timestamp, "America/Chicago");
-
+                
                 // todo: message glomming
-                return <div key={message.hash} className="message">
-                    <div className="message-sender-icon" style={{ backgroundImage: `url(${(sender.pfp || {url: ""}).url})` }}/>
-                    <div className="message-content">
-                        <span className="message-sender-name">{sender.displayName}</span><span className="message-timestamp">{time.format('h:mma')}</span>
-                        {(() => {
-                            // if (message..type == "post") {
-                                // if (Array.isArray(message.text)) {
-                                    // let content = (message.content.text as string[]);
-                                    // return content.map((c, i) =>
-                                    //     <div key={i} className="message-post-content">{c}</div>
-                                    // );
-                                // } else {
-                                    let content = (message as {text: string});
-                                    return <div className="message-post-content">{content.text}</div>;
-                                // }
-                            // } else if (message.content.type == "embed") {
-                            //     let content = (message.content as {videoUrl: string, width?: string, height?: string});
-                            //     return <div className="message-post-content">
-                            //         <iframe
-                            //             width={content.width || "560"}
-                            //             height={content.height || "315"}
-                            //             src={content.videoUrl} 
-                            //             frameBorder="0"
-                            //             allow="autoplay; encrypted-media"></iframe>
-                            //     </div>;
-                            // }
-                        })()}
-                        
-                    </div>
+                return <div key={message.hash} id={message.hash} className="message">
+                    {(() => {
+                        let reply = !message.parentHash ? undefined : props.casts.find(c => c.hash === message.parentHash);
+                        if (reply) {
+                            return <div className="message-reply-heading" onClick={() => document.getElementById(message.parentHash!)!.scrollIntoView({ behavior: "smooth" })}>
+                                <div className="message-reply-curve"/>
+                                <div className="message-reply-sender-icon" style={{ backgroundImage: `url(${(reply.author.pfp || {url:""}).url})`}}/>
+                                <div className="message-reply-sender-name">
+                                    {reply.author.displayName}
+                                </div>
+                                <div className="message-reply-text">
+                                    {reply.text}
+                                </div>
+                            </div>;
+                        } else {
+                            return <></>;
+                        }
+                    })()}
+                    <Message cast={message} setInReply={setInReply}/>
                 </div>
             })}
             <div className="scroll-target" ref={ref}></div>
         </div>
+        {(() => {
+            if (inReply) {
+                return <div className="message-in-reply">Replying to {inReply.author.displayName} <span className="message-in-reply-dismiss" onClick={() => setInReply(undefined)}>×</span></div>;
+            } else {
+                return <></>;
+            }
+        })()}
         <textarea
-            className="message-editor"
+            className={"message-editor" + (inReply ? " message-editor-with-reply" : "")}
             placeholder={"Send a message to #untagged"}
             rows={1}
             value={pendingMessage}

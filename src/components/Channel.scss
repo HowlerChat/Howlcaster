@@ -8,6 +8,7 @@
     z-index: 1;
     display: flex;
     flex-direction: column;
+    width: calc(100vw - 72px - 260px);
 }
 
 .channel-name {
@@ -33,37 +34,57 @@
 
 .message {
     display: flex;
+    flex-direction: column;
     margin-top: 12px;
     white-space: break-spaces;
     word-break: break-word;
+    flex-grow: 0;
 }
 
-.message-sender-icon {
-    width: 49px;
-    height: 49px;
+.message-reply-curve {
+    width: 32px;
+    height: 12px;
+    border-radius: 4px 0px 0px 0px;
+    border-right: 0px;
+    border-bottom: 0px;
+    border-left: 1px;
+    border-top: 1px;
+    border-color: $secondary-brand-highlight-color;
+    border-style: solid;
+    margin-left: 26px;
+    margin-top: 8px;
+}
+
+.message-reply-sender-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    margin: 2px;
     background-position: center;
     background-size: cover;
-    border-radius: 29px;
-    display: inline-block;
 }
 
-.message-content {
-    flex: 1 0;
-    padding-left: 10px;
+.message-reply-sender-name {
+    padding-left: 2pt;
+    font-size: 10pt;
+    font-weight: 600;
+    color: $secondary-action-color;
 }
 
-.message-sender-name {
-    font-weight: 700;
-    text-shadow: 0px 2px 3px rgba(0, 0, 0, 0.8);
+.message-reply-text {
+    padding-left: 4pt;
+    font-size: 10pt;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    width: 40%;
+    overflow-x: hidden;
 }
 
-.message-timestamp {
-    opacity: 0.4;
-    margin-left: 9px;
-}
-
-.message-post-content {
-    margin-top: 2px;
+.message-reply-heading {
+    display: flex;
+    flex-direction: row;
+    align-content: center;
+    vertical-align: middle;
 }
 
 .message-editor {
@@ -83,4 +104,22 @@
     ::placeholder {
         color:rgba(255, 255, 255, 0.60);
     }
+}
+
+.message-editor-with-reply {
+    border-radius: 0px 0px 10px 10px;
+}
+
+.message-in-reply {
+    background: $tertiary-brand-color;
+    border-radius: 10px 10px 0px 0px;
+    padding: 6px 20px;
+    font-size: 10pt;
+}
+
+.message-in-reply-dismiss {
+    float: right;
+    cursor: pointer;
+    font-size: 16pt;
+    line-height: 12pt;
 }
