@@ -97,7 +97,7 @@ async function grabPages(client: MerkleAPIClient) {
     for await (const cast of frc) {
         casts.unshift(cast);
         count++;
-        if (count > 100) break;
+        if (count > 500) break;
     }
 
     return casts;
@@ -134,7 +134,6 @@ function* handleConnectionRequest(request: RequestConnectionAction) {
 
 function* handleSubmitCast(request: SendCastAction) {
     let state: FarcasterState = yield select(s => s.farcaster as FarcasterState);
-    yield put({type: 'SUBMITTING_CAST', message: request.message});
     
     try {
         yield call(publishCast, state.connection, request.message, request.inReplyTo);
@@ -147,7 +146,6 @@ function* handleSubmitCast(request: SendCastAction) {
 
 function* handleReloadCasts(request: ReloadCastsAction) {
     let state: FarcasterState = yield select(s => s.farcaster as FarcasterState);
-    yield put({type: 'RELOADING_CASTS'});
     
     try {
         let casts: Cast[] = yield call(grabPages, state.connection!);

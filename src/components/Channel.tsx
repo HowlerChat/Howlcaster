@@ -1,7 +1,6 @@
 import * as React from 'react';
 import * as moment from 'moment-timezone';
 import { connect } from 'react-redux';
-import { RouteComponentProps, withRouter } from 'react-router';
 import * as Farcaster from '../store/Farcaster';
 import './Channel.scss';
 import { Cast } from '@standard-crypto/farcaster-js';
@@ -39,9 +38,14 @@ const Channel: React.FunctionComponent<ChannelProps> = (props) => {
     return (<div className="channel">
         <div className="channel-name">#untagged</div>
         <div className="message-list">
-            {props.casts.map(message => {
-                let sender = message.author;
-                let time = moment.tz(message.timestamp, "America/Chicago");
+            {props.casts.map(cast => {
+                let message = cast;
+                let recast = message.text.startsWith("recast:farcaster://casts/") ? props.casts.find(c => c.hash === message.text.substring("recast:farcaster://casts/".length)) : undefined;
+                let recasting: Cast | undefined = undefined;
+                if (recast) {
+                    recasting = message;
+                    message = recast;
+                }
                 
                 // todo: message glomming
                 return <div key={message.hash} id={message.hash} className="message">
@@ -56,6 +60,21 @@ const Channel: React.FunctionComponent<ChannelProps> = (props) => {
                                 </div>
                                 <div className="message-reply-text">
                                     {reply.text}
+                                </div>
+                            </div>;
+                        } else {
+                            return <></>;
+                        }
+                    })()}
+                    {(() => {
+                        if (recasting) {
+                            return <div className="message-reply-heading" onClick={() => document.getElementById(message.parentHash!)!.scrollIntoView({ behavior: "smooth" })}>
+                                <div className="message-reply-curve"/>
+                                <div className="message-reply-sender-icon" style={{ backgroundImage: `url(${(recasting.author.pfp || {url:""}).url})`}}/>
+                                <div className="message-reply-sender-name">
+                                    {recasting.author.displayName} recasted
+                                </div>
+                                <div className="message-reply-text">
                                 </div>
                             </div>;
                         } else {
