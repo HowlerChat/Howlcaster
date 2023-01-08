@@ -29,7 +29,7 @@ const Channel: React.FunctionComponent<ChannelProps> = (props) => {
     };
 
     const scrollToBottom = () => {
-        ref.current!.scrollIntoView({ behavior: "smooth" });
+        ref.current!.scrollIntoView({ behavior: "auto" });
     };
 
     React.useEffect(() => {

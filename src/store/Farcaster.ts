@@ -68,9 +68,22 @@ interface FailedCastAction {
     message: string;
 }
 
+interface ReloadCastsAction {
+    type: 'RELOAD_CASTS';
+}
+
+interface ReloadingCastsAction {
+    type: 'RELOADING_CASTS';
+}
+
+interface ReloadedCastsAction {
+    type: 'RELOADED_CASTS';
+    casts: Cast[];
+}
+
 // Declare a 'discriminated union' type. This guarantees that all references to 'type' properties contain one of the
 // declared type strings (and not any other arbitrary string).
-type KnownAction = RequestConnectionAction | RequestingConnectionAction | ReconnectingAction | ReceiveConnectionAction | FailedConnectionAction | SendCastAction | SubmittingCastAction | SubmittedCastAction | FailedCastAction;
+type KnownAction = RequestConnectionAction | RequestingConnectionAction | ReconnectingAction | ReceiveConnectionAction | FailedConnectionAction | SendCastAction | SubmittingCastAction | SubmittedCastAction | FailedCastAction | ReloadCastsAction | ReloadingCastsAction | ReloadedCastsAction;
 
 // ----------------
 // SAGAS - The declarative transaction flows for interacting with the store.
@@ -131,11 +144,24 @@ function* handleSubmitCast(request: SendCastAction) {
     }
 }
 
+function* handleReloadCasts(request: ReloadCastsAction) {
+    let state: FarcasterState = yield select(s => s.farcaster as FarcasterState);
+    yield put({type: 'RELOADING_CASTS'});
+    
+    try {
+        let casts: Cast[] = yield call(grabPages, state.connection!);
+        yield put({type: 'RELOADED_CASTS', casts: casts });
+    } catch (e) {
+        yield put({type: 'FAILED_CONNECTION', error: e });
+    }
+}
+
 
 export const farcasterSagas = {
     watchConnectionRequests: function*() {
         yield takeLeading('REQUEST_CONNECTION', handleConnectionRequest)
         yield takeLeading('SEND_CAST', handleSubmitCast)
+        yield takeLeading('RELOAD_CASTS', handleReloadCasts)
     }
 };
 
@@ -144,6 +170,7 @@ export const farcasterSagas = {
 
 export const actionCreators = {
     requestConnection: (wallet: ethers.Wallet) => ({ type: 'REQUEST_CONNECTION', wallet } as RequestConnectionAction),
+    reloadCasts: () => ({ type: 'RELOAD_CASTS' } as ReloadCastsAction),
     submitCast: (message: string) => ({ type: 'SEND_CAST', message } as SendCastAction),
 };
 
@@ -160,7 +187,6 @@ export const reducer: Reducer<FarcasterState> = (state: FarcasterState | undefin
     const action = incomingAction as KnownAction;
     switch (action.type) {
         case 'REQUESTING_CONNECTION':
-            const requestingConnection = action as RequestingConnectionAction;
             return {
                 ...state,
                 isLoading: true,
@@ -177,14 +203,12 @@ export const reducer: Reducer<FarcasterState> = (state: FarcasterState | undefin
                 casts: receiveConnection.casts,
             };
         case 'FAILED_CONNECTION':
-            const failedConnection = action as FailedConnectionAction;
             return {
                 ...state,
                 isLoading: true,
                 connection: undefined,
             }
         case 'SUBMITTING_CAST':
-            const submittingCast = action as SubmittingCastAction;
             return {
                 ...state,
             };
@@ -192,7 +216,7 @@ export const reducer: Reducer<FarcasterState> = (state: FarcasterState | undefin
             const submittedCast = action as SubmittedCastAction;
             return {
                 ...state,
-                casts: action.casts
+                casts: submittedCast.casts
             };
         case 'FAILED_CAST':
             return {
@@ -206,6 +230,20 @@ export const reducer: Reducer<FarcasterState> = (state: FarcasterState | undefin
             return {
                 ...state,
             };
+        case 'RELOAD_CASTS':
+            return {
+                ...state,
+            }
+        case 'RELOADING_CASTS':
+            return {
+                ...state,
+            }
+        case 'RELOADED_CASTS':
+            const reloadedCasts = action as ReloadedCastsAction;
+            return {
+                ...state,
+                casts: reloadedCasts.casts,
+            }
     }
 
     return state;
