@@ -48,10 +48,6 @@ const App: React.FunctionComponent<AppProps> = (props) => {
                 setUser(wallet);
                 setAuthState(AuthState.SignedIn);
             }
-        } else {
-            setInterval(() => {
-                props.reloadCasts()
-            }, 30000);
         }
     }, [authState]);
     

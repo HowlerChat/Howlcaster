@@ -28,14 +28,14 @@ const Message: React.FunctionComponent<MessageProps> = (props) => {
     let start = 0;
 
     if (links) for (const link of links) {
-        messageParts.push(<>{props.cast.text.substring(start, props.cast.text.indexOf(link))}</>);
-        messageParts.push(<a className="message-a" target="_blank" href={link}>{link}</a>);
+        messageParts.push(<React.Fragment key={props.cast.hash + "link" + start}>{props.cast.text.substring(start, props.cast.text.indexOf(link))}</React.Fragment>);
+        messageParts.push(<a key={props.cast.hash + "link" + (start + 1)} className="message-a" target="_blank" href={link}>{link}</a>);
         start += props.cast.text.indexOf(link) + link.length;
     }
 
-    messageParts.push(<>{props.cast.text.substring(start)}</>);
+    messageParts.push(<React.Fragment key={props.cast.hash + "link" + start}>{props.cast.text.substring(start)}</React.Fragment>);
 
-    return (<>
+    return (<React.Fragment key={props.cast.hash + "ct"}>
         <div className="message-row">    
             <div className="message-sender-icon" style={{ backgroundImage: `url(${(props.cast.author.pfp || {url: ""}).url})` }}/>
             <div className="message-content">
@@ -45,14 +45,14 @@ const Message: React.FunctionComponent<MessageProps> = (props) => {
                     <div>
                     {(() => {
                         if (images) for (const image of images) {
-                            return <img height="200" src={image}/>;
+                            return <img key={props.cast.hash + "img"} height="200" src={image}/>;
                         } else {
                             return <></>;
                         }
                     })()}
                     {(() => {
                         if (videos) for (const video of videos) {
-                            return <iframe width="560" height="315" src={video.replace("youtu.be", "youtube.com").replace("youtube.com/","youtube.com/embed/").replace("watch?v=", "")} title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen></iframe>;
+                            return <iframe key={props.cast.hash + "vid"} width="560" height="315" src={video.replace("youtu.be", "youtube.com").replace("youtube.com/","youtube.com/embed/").replace("watch?v=", "")} title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen></iframe>;
                         }
                     })()}
                     </div>
@@ -62,7 +62,7 @@ const Message: React.FunctionComponent<MessageProps> = (props) => {
                 <FontAwesomeIcon icon={faReply}/>
             </div>
         </div>
-    </>);
+    </React.Fragment>);
 }
 
 export default Message;

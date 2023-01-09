@@ -1,11 +1,8 @@
-import { push } from 'connected-react-router';
 import { Action, Reducer } from 'redux';
-import { call, put, select, takeEvery, takeLatest, takeLeading } from 'redux-saga/effects';
+import { call, put, select, takeLeading } from 'redux-saga/effects';
 import * as ethers from 'ethers';
 
 import { MerkleAPIClient, Cast, User } from "../api/farcaster-js";
-import { ApplicationState, AppThunkAction } from './';
-import { userInfo } from 'os';
 
 
 // -----------------
@@ -16,6 +13,7 @@ export interface FarcasterState {
     user: User | undefined;
     connection: MerkleAPIClient | undefined;
     isLoading: boolean;
+    taggedCasts: Map<string, Cast[]>;
 }
 
 // -----------------
@@ -46,6 +44,7 @@ interface ReceiveConnectionAction {
     connection: MerkleAPIClient;
     user: User;
     casts: Cast[];
+    taggedCasts: Map<string, Cast[]>;
 }
 
 interface SendCastAction {
@@ -62,6 +61,7 @@ interface SubmittingCastAction {
 interface SubmittedCastAction {
     type: 'SUBMITTED_CAST';
     casts: Cast[];
+    taggedCasts: Map<string, Cast[]>;
 }
 
 interface FailedCastAction {
@@ -80,6 +80,7 @@ interface ReloadingCastsAction {
 interface ReloadedCastsAction {
     type: 'RELOADED_CASTS';
     casts: Cast[];
+    taggedCasts: Map<string, Cast[]>;
 }
 
 // Declare a 'discriminated union' type. This guarantees that all references to 'type' properties contain one of the
@@ -93,14 +94,25 @@ async function grabPages(client: MerkleAPIClient) {
     let frc = client.fetchRecentCasts();
     let count = 0;
     let casts: Cast[] = [];
+    let taggedCasts = new Map<string, Cast[]>();
 
     for await (const cast of frc) {
         casts.unshift(cast);
         count++;
+        let matches = cast.text.match(/#[a-z0-9\-_.]+/i);
+        if (matches) {
+            for (let match of matches) {
+                if (!taggedCasts.has(match)) {
+                    taggedCasts.set(match, []);
+                }
+                console.log(match +": " + cast.text);
+                taggedCasts.get(match)!.unshift(cast);
+            }
+        }
         if (count > 500) break;
     }
 
-    return casts;
+    return { casts, taggedCasts };
 }
 
 async function publishCast(client: MerkleAPIClient, message: string, inReplyTo?: Cast | undefined) {
@@ -125,8 +137,8 @@ function* handleConnectionRequest(request: RequestConnectionAction) {
     try {
         let state = new MerkleAPIClient(request.wallet);
         let user: User = yield call(fetchCurrentUser, state);
-        let casts: Cast[] = yield call(grabPages, state);
-        yield put({type: 'RECEIVE_CONNECTION', connection: state, user: user, casts: casts });
+        let pages: { casts: Cast[], taggedCasts: Map<string, Cast[]> } = yield call(grabPages, state);
+        yield put({type: 'RECEIVE_CONNECTION', connection: state, user: user, casts: pages.casts, taggedCasts: pages.taggedCasts });
     } catch (e) {
         yield put({type: 'FAILED_CONNECTION', wallet: request.wallet, error: e });
     }
@@ -137,8 +149,8 @@ function* handleSubmitCast(request: SendCastAction) {
     
     try {
         yield call(publishCast, state.connection, request.message, request.inReplyTo);
-        let casts: Cast[] = yield call(grabPages, state.connection!);
-        yield put({type: 'SUBMITTED_CAST', casts: casts });
+        let pages: { casts: Cast[], taggedCasts: Map<string, Cast[]> } = yield call(grabPages, state.connection!);
+        yield put({type: 'SUBMITTED_CAST', casts: pages.casts, taggedCasts: pages.taggedCasts });
     } catch (e) {
         yield put({type: 'FAILED_CAST', message: request.message, error: e });
     }
@@ -148,8 +160,8 @@ function* handleReloadCasts(request: ReloadCastsAction) {
     let state: FarcasterState = yield select(s => s.farcaster as FarcasterState);
     
     try {
-        let casts: Cast[] = yield call(grabPages, state.connection!);
-        yield put({type: 'RELOADED_CASTS', casts: casts });
+        let pages: { casts: Cast[], taggedCasts: Map<string, Cast[]> } = yield call(grabPages, state.connection!);
+        yield put({type: 'RELOADED_CASTS', casts: pages.casts, taggedCasts: pages.taggedCasts });
     } catch (e) {
         yield put({type: 'FAILED_CONNECTION', error: e });
     }
@@ -176,7 +188,7 @@ export const actionCreators = {
 // ----------------
 // REDUCER - For a given state and action, returns the new state. To support time travel, this must not mutate the old state.
 
-const unloadedState: FarcasterState = { casts: [], user: undefined, isLoading: false, connection: undefined };
+const unloadedState: FarcasterState = { casts: [], taggedCasts: new Map<string, Cast[]>(), user: undefined, isLoading: false, connection: undefined };
 
 export const reducer: Reducer<FarcasterState> = (state: FarcasterState | undefined, incomingAction: Action): FarcasterState => {
     if (state === undefined) {
@@ -200,6 +212,7 @@ export const reducer: Reducer<FarcasterState> = (state: FarcasterState | undefin
                 connection: receiveConnection.connection,
                 user: receiveConnection.user,
                 casts: receiveConnection.casts,
+                taggedCasts: receiveConnection.taggedCasts,
             };
         case 'FAILED_CONNECTION':
             return {
@@ -215,7 +228,8 @@ export const reducer: Reducer<FarcasterState> = (state: FarcasterState | undefin
             const submittedCast = action as SubmittedCastAction;
             return {
                 ...state,
-                casts: submittedCast.casts
+                casts: submittedCast.casts,
+                taggedCasts: submittedCast.taggedCasts,
             };
         case 'FAILED_CAST':
             return {
@@ -242,6 +256,7 @@ export const reducer: Reducer<FarcasterState> = (state: FarcasterState | undefin
             return {
                 ...state,
                 casts: reloadedCasts.casts,
+                taggedCasts: reloadedCasts.taggedCasts,
             }
     }
 

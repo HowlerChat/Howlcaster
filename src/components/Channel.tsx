@@ -7,7 +7,7 @@ import { Cast } from '@standard-crypto/farcaster-js';
 import { ApplicationState } from '../store';
 import Message from './Message';
 
-type ChannelProps = { casts: Cast[], channelId: string } & Farcaster.FarcasterState & typeof Farcaster.actionCreators;
+type ChannelProps = { casts: Cast[], channelId: string, channelName: string } & Farcaster.FarcasterState & typeof Farcaster.actionCreators;
 
 const Channel: React.FunctionComponent<ChannelProps> = (props) => {
     let [pendingMessage, setPendingMessage] = React.useState<string>();
@@ -34,25 +34,26 @@ const Channel: React.FunctionComponent<ChannelProps> = (props) => {
     React.useEffect(() => {
         scrollToBottom();
     }, [props.casts]);
-
+    
     return (<div className="channel">
-        <div className="channel-name">#untagged</div>
+        <div className="channel-name">{props.channelName}</div>
         <div className="message-list">
             {props.casts.map(cast => {
                 let message = cast;
                 let recast = message.text.startsWith("recast:farcaster://casts/") ? props.casts.find(c => c.hash === message.text.substring("recast:farcaster://casts/".length)) : undefined;
                 let recasting: Cast | undefined = undefined;
+                let id = message.hash;
                 if (recast) {
                     recasting = message;
                     message = recast;
                 }
-                
+
                 // todo: message glomming
-                return <div key={message.hash} id={message.hash} className="message">
+                return <div key={id} id={id} className="message">
                     {(() => {
                         let reply = !message.parentHash ? undefined : props.casts.find(c => c.hash === message.parentHash);
                         if (reply) {
-                            return <div className="message-reply-heading" onClick={() => document.getElementById(message.parentHash!)!.scrollIntoView({ behavior: "smooth" })}>
+                            return <div key={id + "rplyhd"} className="message-reply-heading" onClick={() => document.getElementById(message.parentHash!)!.scrollIntoView({ behavior: "smooth" })}>
                                 <div className="message-reply-curve"/>
                                 <div className="message-reply-sender-icon" style={{ backgroundImage: `url(${(reply.author.pfp || {url:""}).url})`}}/>
                                 <div className="message-reply-sender-name">
@@ -68,7 +69,7 @@ const Channel: React.FunctionComponent<ChannelProps> = (props) => {
                     })()}
                     {(() => {
                         if (recasting) {
-                            return <div className="message-reply-heading" onClick={() => document.getElementById(message.parentHash!)!.scrollIntoView({ behavior: "smooth" })}>
+                            return <div key={id + "recasthd"} className="message-reply-heading" onClick={() => document.getElementById(message.parentHash!)!.scrollIntoView({ behavior: "smooth" })}>
                                 <div className="message-reply-curve"/>
                                 <div className="message-reply-sender-icon" style={{ backgroundImage: `url(${(recasting.author.pfp || {url:""}).url})`}}/>
                                 <div className="message-reply-sender-name">
@@ -81,7 +82,7 @@ const Channel: React.FunctionComponent<ChannelProps> = (props) => {
                             return <></>;
                         }
                     })()}
-                    <Message cast={message} setInReply={setInReply}/>
+                    <Message key={id + "msg"} cast={message} setInReply={setInReply}/>
                 </div>
             })}
             <div className="scroll-target" ref={ref}></div>
@@ -95,7 +96,7 @@ const Channel: React.FunctionComponent<ChannelProps> = (props) => {
         })()}
         <textarea
             className={"message-editor" + (inReply ? " message-editor-with-reply" : "")}
-            placeholder={"Send a message to #untagged"}
+            placeholder={"Send a message to " + props.channelName}
             rows={1}
             value={pendingMessage}
             onChange={(e) => setPendingMessage(e.target.value)}
