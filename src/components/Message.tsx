@@ -11,29 +11,29 @@ type MessageProps = { cast: Cast, setInReply: React.Dispatch<React.SetStateActio
 
 const Message: React.FunctionComponent<MessageProps> = (props) => {
     let time = moment.tz(props.cast.timestamp, "America/Chicago");
-    let images = props.cast.text.match(/https?:\/\/[a-z\-_0-9/.]*\.[jpg][pni][egf]g?/i);
-
+    let text = props.cast.text;
+    let images = text.match(/https?:\/\/[a-z\-_0-9/.]*\.[jpg][pni][egf]g?/i);
     if (images) for (const image of images) {
-        props.cast.text = props.cast.text.replace(image, "");
+        text = text.replace(image, "");
     }
 
-    let videos = props.cast.text.match(/https?:\/\/w?w?w?.?youtu.?be.?c?o?m?\/[a-z\-_0-9/.?=]*/i);
+    let videos = text.match(/https?:\/\/w?w?w?.?youtu.?be.?c?o?m?\/[a-z\-_0-9/.?=]*/i);
 
     if (videos) for (const video of videos) {
-        props.cast.text = props.cast.text.replace(video, "");
+        text = text.replace(video, "");
     }
 
-    let links = props.cast.text.match(/https?:\/\/[a-z\-_0-9/.?]*/i);
+    let links = text.match(/https?:\/\/[a-z\-_0-9/.?]*/i);
     let messageParts: JSX.Element[] = [];
     let start = 0;
 
     if (links) for (const link of links) {
-        messageParts.push(<React.Fragment key={props.cast.hash + "link" + start}>{props.cast.text.substring(start, props.cast.text.indexOf(link))}</React.Fragment>);
+        messageParts.push(<React.Fragment key={props.cast.hash + "link" + start}>{text.substring(start, text.indexOf(link))}</React.Fragment>);
         messageParts.push(<a key={props.cast.hash + "link" + (start + 1)} className="message-a" target="_blank" href={link}>{link}</a>);
-        start += props.cast.text.indexOf(link) + link.length;
+        start += text.indexOf(link) + link.length;
     }
 
-    messageParts.push(<React.Fragment key={props.cast.hash + "link" + start}>{props.cast.text.substring(start)}</React.Fragment>);
+    messageParts.push(<React.Fragment key={props.cast.hash + "link" + start}>{text.substring(start)}</React.Fragment>);
 
     return (<React.Fragment key={props.cast.hash + "ct"}>
         <div className="message-row">    
